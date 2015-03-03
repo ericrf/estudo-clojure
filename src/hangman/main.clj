@@ -40,11 +40,8 @@
      |
     _|___")
 
-
-
+;TODO:
 (def hits (java.util.HashSet.))
-(def chs (java.util.HashSet.))
-;(def word (java.lang.String. (javax.swing.JOptionPane/showInputDialog "Informe a palavra chave")))
 
 (defn err-handler [mistakes]
   (case mistakes
@@ -57,10 +54,10 @@
   (javax.swing.JOptionPane/showMessageDialog nil "Você GANHOU!")
   (System/exit 0))
 
-(defn success-handler [c]
+(defn success-handler [c chs]
   (.add hits c)
   (javax.swing.JOptionPane/showMessageDialog nil "Você acertou!")
-  (if (= (.size hits) (.size chs)) (end-game)))
+  (if (= (.size hits) (count chs)) (end-game)))
 
 ;(defn write-riddle []
 ;  (loop [i 0]
@@ -68,16 +65,15 @@
 ;      (println (java.lang.Boolean/valueOf (.contains hits (.charAt word i))))
 ;      (recur (+ i 1)))))
 
-;(loop [i (.length word)]
-;    (when (> i 0)
-;      (.add chs (.charAt word (- i 1)))
-;      (recur (- i 1))))
+(defn- obtem-set-chs [word]
+  (into #{} (seq (.toCharArray word))))
 
 (defn start-game []
-  (loop [mistakes 4]
-    (when (> mistakes 0)
-      (def c (javax.swing.JOptionPane/showInputDialog "Informe um caractere"))
-      (if (.contains word c) (success-handler c) (err-handler mistakes))
-      (if-not (.contains word c) (def r (- mistakes 1)) (def r mistakes))
-      (recur r)))
-  (javax.swing.JOptionPane/showMessageDialog nil "Você perdeu"))
+  (let [word (javax.swing.JOptionPane/showInputDialog "Informe a palavra chave")
+        chs (obtem-set-chs word)]
+    (loop [mistakes 4]
+      (when (> mistakes 0)
+        (let [c (javax.swing.JOptionPane/showInputDialog "Informe um caractere")] 
+          (if (.contains word c) (success-handler c chs) (err-handler mistakes))
+          (recur (if (.contains word c) mistakes (dec mistakes))))))
+    (javax.swing.JOptionPane/showMessageDialog nil "Você perdeu")))
