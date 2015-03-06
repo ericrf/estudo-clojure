@@ -51,6 +51,15 @@
   (javax.swing.JOptionPane/showMessageDialog nil "Você GANHOU!")
   (System/exit 0))
 
+(defn- write-word [word hits]
+  (let [spaced ""]
+    (for [position (range 0 (count word))
+        :let [c (.charAt word position)]]
+      (if (contains? hits c) (str spaced c " ") (str spaced "_ ")))))
+
+(defn- show-word [word hits]
+   (javax.swing.JOptionPane/showMessageDialog nil (apply str (write-word word hits))))
+
 (defn- success-handler [c chs hits]
   (javax.swing.JOptionPane/showMessageDialog nil "Você acertou!")
   (if (= (count (into hits c)) (count chs)) (end-game)))
@@ -64,6 +73,7 @@
     (loop [mistakes 4 
            hits #{}]
       (when (> mistakes 0)
+        (show-word word hits)
         (let [c (javax.swing.JOptionPane/showInputDialog "Informe um caractere")] 
           (if (.contains word c) (success-handler c chs hits) (err-handler mistakes))
           (recur (if (.contains word c) mistakes (dec mistakes))
