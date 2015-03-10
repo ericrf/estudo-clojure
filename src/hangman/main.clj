@@ -70,21 +70,45 @@
 (defn- display-lose-message-swing []
   (show-message-dialog "Você PERDEU!"))
 
-(defn start-game []
-  (let [word (display-request-word-swing)
+(defn- display-request-word [gui-type]
+  (case gui-type
+    "swing" (display-request-word-swing)))
+
+(defn- display-ask-for-character [gui-type]
+  (case gui-type
+    "swing" (display-ask-for-character-swing)))
+
+(defn- display-word [gui-type word new-hits]
+  (case gui-type
+    "swing" (display-word-swing word new-hits)))
+
+(defn- display-win-message [gui-type]
+  (case gui-type
+    "swing" (display-win-message-swing)))
+
+(defn- display-body [gui-type mistakes]
+  (case gui-type
+    "swing" (display-body-swing mistakes)))
+
+(defn- display-lose-message [gui-type]
+  (case gui-type
+    "swing" (display-lose-message-swing)))
+
+(defn start-game [gui-type]
+  (let [word (display-request-word gui-type)
         chs (into #{} (seq word))]
     (loop [mistakes 3
            hits #{}]
-        (let [c (display-ask-for-character-swing)] 
+        (let [c (display-ask-for-character gui-type)] 
           (if (.contains word c)
             (let [new-hits (into hits c)]
-              (display-word-swing word new-hits)
+              (display-word gui-type word new-hits)
               (if (= (count new-hits) (count chs))
-                (display-win-message-swing)
+                (display-win-message gui-type)
                 (recur mistakes 
                        new-hits)))
             (do
-              (display-body-swing mistakes)
+              (display-body gui-type mistakes)
               (if (zero? mistakes)
-                (display-lose-message-swing)
+                (display-lose-message gui-type)
                 (recur (dec mistakes) hits))))))))
