@@ -46,42 +46,45 @@
 (defn- show-message-dialog [sentence]
   (javax.swing.JOptionPane/showMessageDialog nil sentence))
 
+(defn- write-body-by [mistakes]
+  (get [legs arms body head] mistakes))
+
 (defn- display-body-swing [mistakes]
-  (show-message-dialog (get [legs arms body head] mistakes)))
+  (show-message-dialog (write-body-by mistakes)))
 
 (defn- write-word [word hits]
-  (map #(if(contains? hits %) % "_") (seq word)))
+  (apply str (map #(if(contains? hits %) % "_") (seq word))))
 
-(defn- show-word-swing [word hits]
-   (show-message-dialog (apply str (write-word word hits))))
+(defn- display-word-swing [word hits]
+   (show-message-dialog (write-word word hits)))
 
-(defn- request-word-swing []
+(defn- display-request-word-swing []
   (show-input-dialog "Informe a palavra chave!"))
 
-(defn- ask-for-character-swing []
+(defn- display-ask-for-character-swing []
   (show-input-dialog "Informe um caractere."))
 
-(defn- show-win-message-swing []
+(defn- display-win-message-swing []
   (show-message-dialog "Você GANHOU!"))
 
-(defn- show-lose-message-swing []
+(defn- display-lose-message-swing []
   (show-message-dialog "Você PERDEU!"))
 
 (defn start-game []
-  (let [word (request-word-swing)
+  (let [word (display-request-word-swing)
         chs (into #{} (seq word))]
     (loop [mistakes 3
            hits #{}]
-        (let [c (ask-for-character-swing)] 
+        (let [c (display-ask-for-character-swing)] 
           (if (.contains word c)
             (let [new-hits (into hits c)]
-              (show-word-swing word new-hits)
+              (display-word-swing word new-hits)
               (if (= (count new-hits) (count chs))
-                (show-win-message-swing)
+                (display-win-message-swing)
                 (recur mistakes 
                        new-hits)))
             (do
               (display-body-swing mistakes)
               (if (zero? mistakes)
-                (show-lose-message-swing)
+                (display-lose-message-swing)
                 (recur (dec mistakes) hits))))))))
