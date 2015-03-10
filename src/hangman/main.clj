@@ -40,42 +40,48 @@
      |
     _|___")
 
-(defn- err-handler [mistakes]
-  (case mistakes
-    4 (javax.swing.JOptionPane/showMessageDialog nil head)
-    3 (javax.swing.JOptionPane/showMessageDialog nil body)
-    2 (javax.swing.JOptionPane/showMessageDialog nil arms)
-    1 (javax.swing.JOptionPane/showMessageDialog nil legs)))
+(defn- show-input-dialog [sentence]
+  (javax.swing.JOptionPane/showInputDialog sentence))
 
-(defn- end-game []
-  (javax.swing.JOptionPane/showMessageDialog nil "Você GANHOU!")
-  (System/exit 0))
+(defn- show-message-dialog [sentence]
+  (javax.swing.JOptionPane/showMessageDialog nil sentence))
+
+(defn- display-body-swing [mistakes]
+  (show-message-dialog (get [legs arms body head] mistakes)))
 
 (defn- write-word [word hits]
-  (let [spaced ""]
-    (for [position (range 0 (count word))
-        :let [c (.charAt word position)]]
-      (if (contains? hits c) (str spaced c " ") (str spaced "_ ")))))
+  (map #(if(contains? hits %) % "_") (seq word)))
 
-(defn- show-word [word hits]
-   (javax.swing.JOptionPane/showMessageDialog nil (apply str (write-word word hits))))
+(defn- show-word-swing [word hits]
+   (show-message-dialog (apply str (write-word word hits))))
 
-(defn- success-handler [c chs hits]
-  (javax.swing.JOptionPane/showMessageDialog nil "Você acertou!")
-  (if (= (count (into hits c)) (count chs)) (end-game)))
+(defn- request-word-swing []
+  (show-input-dialog "Informe a palavra chave!"))
 
-(defn- obtem-set-chs [word]
-  (into #{} (seq (.toCharArray word))))
+(defn- ask-for-character-swing []
+  (show-input-dialog "Informe um caractere."))
+
+(defn- show-win-message-swing []
+  (show-message-dialog "Você GANHOU!"))
+
+(defn- show-lose-message-swing []
+  (show-message-dialog "Você PERDEU!"))
 
 (defn start-game []
-  (let [word (javax.swing.JOptionPane/showInputDialog "Informe a palavra chave")
-        chs (obtem-set-chs word)]
-    (loop [mistakes 4 
+  (let [word (request-word-swing)
+        chs (into #{} (seq word))]
+    (loop [mistakes 3
            hits #{}]
-      (when (> mistakes 0)
-        (show-word word hits)
-        (let [c (javax.swing.JOptionPane/showInputDialog "Informe um caractere")] 
-          (if (.contains word c) (success-handler c chs hits) (err-handler mistakes))
-          (recur (if (.contains word c) mistakes (dec mistakes))
-                 (into hits c)))))
-    (javax.swing.JOptionPane/showMessageDialog nil "Você perdeu")))
+        (let [c (ask-for-character-swing)] 
+          (if (.contains word c)
+            (let [new-hits (into hits c)]
+              (show-word-swing word new-hits)
+              (if (= (count new-hits) (count chs))
+                (show-win-message-swing)
+                (recur mistakes 
+                       new-hits)))
+            (do
+              (display-body-swing mistakes)
+              (if (zero? mistakes)
+                (show-lose-message-swing)
+                (recur (dec mistakes) hits))))))))
