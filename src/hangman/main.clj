@@ -94,21 +94,30 @@
   (case gui-type
     "swing" (display-lose-message-swing)))
 
+(defn- word-contains-char? [word c]
+  (.contains word c))
+
+(defn- is-count-new-hits-equals-count-chars? [new-hits chs]
+  (= (count new-hits) (count chs)))
+
+(defn- is-end-game? [mistakes]
+  (zero? mistakes))
+
 (defn start-game [gui-type]
   (let [word (display-request-word gui-type)
         chs (into #{} (seq word))]
     (loop [mistakes 3
            hits #{}]
         (let [c (display-ask-for-character gui-type)] 
-          (if (.contains word c)
+          (if (word-contains-char? word c)
             (let [new-hits (into hits c)]
               (display-word gui-type word new-hits)
-              (if (= (count new-hits) (count chs))
+              (if (is-count-new-hits-equals-count-chars? new-hits chs)
                 (display-win-message gui-type)
                 (recur mistakes 
                        new-hits)))
             (do
               (display-body gui-type mistakes)
-              (if (zero? mistakes)
+              (if (is-end-game? mistakes)
                 (display-lose-message gui-type)
                 (recur (dec mistakes) hits))))))))
