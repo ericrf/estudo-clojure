@@ -46,78 +46,73 @@
 (defn- show-message-dialog [sentence]
   (javax.swing.JOptionPane/showMessageDialog nil sentence))
 
-(defn- write-body-by [mistakes]
-  (get [legs arms body head] mistakes))
-
 (defn- display-body-swing [mistakes]
-  (show-message-dialog (write-body-by mistakes)))
+  (show-message-dialog (get [legs arms body head] mistakes)))
 
 (defn- write-word [word hits]
-  (apply str (map #(if(contains? hits %) % "_") (seq word))))
+  (map #(if(contains? hits %) % "_") (seq word)))
 
-(defn- display-word-swing [word hits]
-   (show-message-dialog (write-word word hits)))
+(defn- show-word-swing [word hits]
+   (show-message-dialog (apply str (write-word word hits))))
 
-(defn- display-request-word-swing []
+(defn- request-word-swing []
   (show-input-dialog "Informe a palavra chave!"))
 
-(defn- display-ask-for-character-swing []
+(defn- ask-for-character-swing []
   (show-input-dialog "Informe um caractere."))
 
-(defn- display-win-message-swing []
+(defn- show-win-message-swing []
   (show-message-dialog "Você GANHOU!"))
 
-(defn- display-lose-message-swing []
+(defn- show-lose-message-swing []
   (show-message-dialog "Você PERDEU!"))
 
-(defn- display-request-word [gui-type]
-  (case gui-type
-    "swing" (display-request-word-swing)))
-
-(defn- display-ask-for-character [gui-type]
-  (case gui-type
-    "swing" (display-ask-for-character-swing)))
-
-(defn- display-word [gui-type word new-hits]
-  (case gui-type
-    "swing" (display-word-swing word new-hits)))
-
-(defn- display-win-message [gui-type]
-  (case gui-type
-    "swing" (display-win-message-swing)))
-
-(defn- display-body [gui-type mistakes]
-  (case gui-type
-    "swing" (display-body-swing mistakes)))
-
-(defn- display-lose-message [gui-type]
-  (case gui-type
-    "swing" (display-lose-message-swing)))
-
-(defn- word-contains-char? [word c]
-  (.contains word c))
-
-(defn- is-count-new-hits-equals-count-chars? [new-hits chs]
-  (= (count new-hits) (count chs)))
-
-(defn- is-end-game? [mistakes]
-  (zero? mistakes))
-
-(defn start-game [gui-type]
-  (let [word (display-request-word gui-type)
+(defn start-game []
+  (let [word (request-word-swing)
         chs (into #{} (seq word))]
     (loop [mistakes 3
            hits #{}]
-        (let [c (display-ask-for-character gui-type)] 
-          (if (word-contains-char? word c)
+        (let [c (ask-for-character-swing)] 
+          (if (.contains word c)
             (let [new-hits (into hits c)]
-              (display-word gui-type word new-hits)
-              (if (is-count-new-hits-equals-count-chars? new-hits chs)
-                (display-win-message gui-type)
+              (show-word-swing word new-hits)
+              (if (= (count new-hits) (count chs))
+                (show-win-message-swing)
                 (recur mistakes 
                        new-hits)))
             (do
-              (display-body gui-type mistakes)
-              (if (is-end-game? mistakes)
-                (display-lose-message gui-type)
+              (display-body-swing mistakes)
+              (if (zero? mistakes)
+                (show-lose-message-swing)
                 (recur (dec mistakes) hits))))))))
+
+
+(defn- new-game [word hits mistakes] 
+  {:word word :chs (into #{} (seq word)) :hits hits :mistakes mistakes})
+
+(defn- win? [game new-hits]
+  (= (count new-hits) (count (get game :chs))))
+
+(defn lose? [game]
+  (zero? (get game :mistakes)))
+
+(defn- with-secret-word [game c]
+  (let [new-hits (into (get game :hits) c)]
+    (show-word-swing (get game :word) new-hits)
+    (if (win? game new-hits)
+      (show-win-message-swing)
+      (new-game (get game :word) new-hits (get game :mistakes)))))
+
+(defn- with-body-part [game]
+  (do
+    (display-body-swing (get game :mistakes))
+    (if (lose? game)
+      (show-lose-message-swing)
+      (new-game (get game :word) (get game :hits) (dec (get game :mistakes))))))
+
+(defn start-hangmain [word]
+  (loop [game (new-game word #{} 3)]
+    (let [c (ask-for-character-swing)]
+      (if (.contains (get game :word) c)
+        (recur (with-secret-word game c))
+        (recur (with-body-part game))))))
