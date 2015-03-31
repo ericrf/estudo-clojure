@@ -85,12 +85,10 @@
 
 (defn start-hangmain [word]
   (loop [game (new-game word)]
-    ;TODO: simplificar com "cond"  
-    (if (lose? game)
-      (show-lose-message-swing)
-      (if (win? game)
-        (show-win-message-swing)
-        (let [c (ask-for-character-swing)
-              game' (with-attempt game c)]
-          (show-message-dialog (message game'))
-          (recur game'))))))
+    (cond 
+      (lose? game) (show-lose-message-swing)
+      (win? game) (show-win-message-swing)
+      :else (let [c (ask-for-character-swing)
+                  game' (with-attempt game c)]
+              (show-message-dialog (message game'))
+              (recur game')))))
