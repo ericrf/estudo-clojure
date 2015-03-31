@@ -46,14 +46,8 @@
 (defn- show-message-dialog [sentence]
   (javax.swing.JOptionPane/showMessageDialog nil sentence))
 
-(defn- display-body-swing [mistakes]
-  (show-message-dialog (get [legs arms body head] mistakes)))
-
 (defn- write-word [word hits]
-  (map #(if(contains? hits %) % "_") (seq word)))
-
-(defn- show-word-swing [word hits]
-   (show-message-dialog (apply str (write-word word hits))))
+  (apply str (map #(if(contains? hits %) % "_ ") (seq word))))
 
 (defn- request-word-swing []
   (show-input-dialog "Informe a palavra chave!"))
@@ -67,52 +61,36 @@
 (defn- show-lose-message-swing []
   (show-message-dialog "Você PERDEU!"))
 
-(defn start-game []
-  (let [word (request-word-swing)
-        chs (into #{} (seq word))]
-    (loop [mistakes 3
-           hits #{}]
-        (let [c (ask-for-character-swing)] 
-          (if (.contains word c)
-            (let [new-hits (into hits c)]
-              (show-word-swing word new-hits)
-              (if (= (count new-hits) (count chs))
-                (show-win-message-swing)
-                (recur mistakes 
-                       new-hits)))
-            (do
-              (display-body-swing mistakes)
-              (if (zero? mistakes)
-                (show-lose-message-swing)
-                (recur (dec mistakes) hits))))))))
+(defn- new-game [word] 
+  {:word word :chs (into #{} (seq word)) :hits #{} :mistakes 4 :message nil})
 
-
-(defn- new-game [word hits mistakes] 
-  {:word word :chs (into #{} (seq word)) :hits hits :mistakes mistakes})
-
-(defn- win? [game new-hits]
-  (= (count new-hits) (count (get game :chs))))
+(defn- win? [game]
+  (= (count (:hits game)) (count (:chs game))))
 
 (defn lose? [game]
-  (zero? (get game :mistakes)))
+  (zero? (:mistakes game)))
 
-(defn- with-secret-word [game c]
-  (let [new-hits (into (get game :hits) c)]
-    (show-word-swing (get game :word) new-hits)
-    (if (win? game new-hits)
-      (show-win-message-swing)
-      (new-game (get game :word) new-hits (get game :mistakes)))))
+(defn- with-attempt [game c]
+  ;TODO: simplificar com "->" ou "->>"
+  (if (.contains (:word game) c)
+    (let [game' (update-in game [:hits] into c)]
+      (assoc game'
+           :message (write-word (:word game') (:hits game'))))
+    (let [game' (update-in game [:mistakes] dec)]
+      (assoc game'
+           :message (get [legs arms body head] (:mistakes game'))))))
 
-(defn- with-body-part [game]
-  (do
-    (display-body-swing (get game :mistakes))
-    (if (lose? game)
-      (show-lose-message-swing)
-      (new-game (get game :word) (get game :hits) (dec (get game :mistakes))))))
+(defn- message [game]
+  (:message game))
 
 (defn start-hangmain [word]
-  (loop [game (new-game word #{} 3)]
-    (let [c (ask-for-character-swing)]
-      (if (.contains (get game :word) c)
-        (recur (with-secret-word game c))
-        (recur (with-body-part game))))))
+  (loop [game (new-game word)]
+    ;TODO: simplificar com "cond"  
+    (if (lose? game)
+      (show-lose-message-swing)
+      (if (win? game)
+        (show-win-message-swing)
+        (let [c (ask-for-character-swing)
+              game' (with-attempt game c)]
+          (show-message-dialog (message game'))
+          (recur game'))))))
