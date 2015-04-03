@@ -58,16 +58,16 @@
 (defn- show-lose-message-swing! []
   (show-message-dialog! "Você PERDEU!"))
 
-(defn- new-game [word] 
+(defn new-game [word] 
   {:word word :chs (into #{} (seq word)) :hits #{} :mistakes 4 :message nil})
 
-(defn- win? [game]
+(defn win? [game]
   (= (count (:hits game)) (count (:chs game))))
 
 (defn lose? [game]
   (zero? (:mistakes game)))
 
-(defn- with-attempt [game c]
+(defn with-attempt [game c]
   ;TODO: simplificar com "->" ou "->>"
   (if (.contains (:word game) c)
     (let [game' (update-in game [:hits] into c)]
@@ -76,7 +76,8 @@
     (let [game' (update-in game [:mistakes] dec)]
       (assoc game'
            :message (get [legs arms body head] (:mistakes game'))))))
-(defn- message [game]
+
+(defn message [game]
   (:message game))
 
 (defn start-hangmain! [word]
