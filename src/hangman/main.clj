@@ -68,11 +68,11 @@
   (zero? (:mistakes game)))
 
 (defn with-attempt [game c]
-  ;TODO: simplificar com "->" ou "->>"
   (if (.contains (:word game) c)
     (let [game' (update-in game [:hits] into c)]
       (assoc game'
            :message (write-word (:word game') (:hits game'))))
+    
     (let [game' (update-in game [:mistakes] dec)]
       (assoc game'
            :message (get [legs arms body head] (:mistakes game'))))))

@@ -4,3 +4,4 @@
 
 (fact "1 = 1" 
       1 => 2)  
+;(do (require 'midje.repl) (midje.repl/autotest))
