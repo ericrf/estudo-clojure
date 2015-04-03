@@ -40,26 +40,23 @@
      |
     _|___")
 
-(defn- show-input-dialog [sentence]
+(defn- show-input-dialog! [sentence]
   (javax.swing.JOptionPane/showInputDialog sentence))
 
-(defn- show-message-dialog [sentence]
+(defn- show-message-dialog! [sentence]
   (javax.swing.JOptionPane/showMessageDialog nil sentence))
 
 (defn- write-word [word hits]
   (apply str (map #(if(contains? hits %) % "_ ") (seq word))))
 
-(defn- request-word-swing []
-  (show-input-dialog "Informe a palavra chave!"))
+(defn- ask-for-character-swing! []
+  (show-input-dialog! "Informe um caractere."))
 
-(defn- ask-for-character-swing []
-  (show-input-dialog "Informe um caractere."))
+(defn- show-win-message-swing! []
+  (show-message-dialog! "Você GANHOU!"))
 
-(defn- show-win-message-swing []
-  (show-message-dialog "Você GANHOU!"))
-
-(defn- show-lose-message-swing []
-  (show-message-dialog "Você PERDEU!"))
+(defn- show-lose-message-swing! []
+  (show-message-dialog! "Você PERDEU!"))
 
 (defn- new-game [word] 
   {:word word :chs (into #{} (seq word)) :hits #{} :mistakes 4 :message nil})
@@ -79,16 +76,15 @@
     (let [game' (update-in game [:mistakes] dec)]
       (assoc game'
            :message (get [legs arms body head] (:mistakes game'))))))
-
 (defn- message [game]
   (:message game))
 
-(defn start-hangmain [word]
+(defn start-hangmain! [word]
   (loop [game (new-game word)]
     (cond 
-      (lose? game) (show-lose-message-swing)
-      (win? game) (show-win-message-swing)
-      :else (let [c (ask-for-character-swing)
+      (lose? game) (show-lose-message-swing!)
+      (win? game) (show-win-message-swing!)
+      :else (let [c (ask-for-character-swing!)
                   game' (with-attempt game c)]
               (show-message-dialog (message game'))
               (recur game')))))
