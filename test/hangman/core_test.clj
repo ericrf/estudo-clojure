@@ -11,12 +11,12 @@
         (win? game) => false))
 
 (fact "attempt is right" 
-      (let [game (new-game "word")]
-        (with-attempt game "w") => {:word "word" :chs (into #{} (seq "word")) :hits #{\w } :mistakes 4 :message "w_ _ _ "}))
+      (let [game (new-game "aligator")]
+        (with-attempt game "a") => {:word "aligator" :chs (into #{} (seq "aligator")) :hits #{\a } :mistakes 4 :message "a_ _ _ a_ _ _ "}))
 
-(fact "attempt is wrong" 
-      (let [game (new-game "word")]
-        (with-attempt game "s") => {:word "word" :chs (into #{} (seq "word")) :hits #{} :mistakes 3 :message head}))
+(fact "attempt is wrong"
+      (let [game (new-game "aligator")]
+        (with-attempt game "s") => {:word "aligator" :chs (into #{} (seq "aligator")) :hits #{} :mistakes 3 :message head}))
 
 
 ;(do (require 'midje.repl) (midje.repl/autotest))
