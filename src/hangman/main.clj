@@ -87,5 +87,5 @@
       (win? game) (show-win-message-swing!)
       :else (let [c (ask-for-character-swing!)
                   game' (with-attempt game c)]
-              (show-message-dialog (message game'))
+              (show-message-dialog! (message game'))
               (recur game')))))
