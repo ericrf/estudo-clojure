@@ -25,15 +25,14 @@
             (with-attempt "r")
             win?) => true)
   
-  (let [game (new-game "aligator")]
-   (let [game' (-> game (with-attempt "w"))
-         game'' (-> game' (with-attempt "s"))
-         game'''(-> game'' (with-attempt "p"))
-         game''''(-> game''' (with-attempt "x"))]
-     (fact "first error" (:message game') => head)
-     (fact "second error" (:message game'') => body)
-     (fact "third error" (:message game''') => arms)
-     (fact "last error" (:message game'''') => legs)
-     (fact "lose the game " (lose? game'''') => true))))
+ (let [game' (-> game (with-attempt "w"))
+       game'' (-> game' (with-attempt "s"))
+       game'''(-> game'' (with-attempt "p"))
+       game''''(-> game''' (with-attempt "x"))]
+   (fact "first error" (:message game') => head)
+   (fact "second error" (:message game'') => body)
+   (fact "third error" (:message game''') => arms)
+   (fact "last error" (:message game'''') => legs)
+   (fact "lose the game " (lose? game'''') => true)))
 
 ;(do (require 'midje.repl) (midje.repl/autotest))
