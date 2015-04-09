@@ -3,8 +3,8 @@
             [hangman.main :refer :all]))
 
 (let [game (new-game "aligator")]
-  (defn with-attempts [game, guesses]
-    (reduce (fn [game' guess] (with-attempt game' guess)) game guesses))
+  (defn- with-attempts [game, guesses]
+    (reduce with-attempt game guesses))
 
   (fact "new game is not lost" 
         (lose? game) => false)
