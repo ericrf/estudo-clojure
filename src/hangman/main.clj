@@ -1,4 +1,5 @@
-(ns hangman.main)
+(ns hangman.main
+  (:require [clojure.core.async :refer [chan alt!! timeout thread]]))
 
 (def head  
   "      _______
@@ -80,7 +81,7 @@
 (defn message [game]
   (:message game))
 
-(defn start-hangmain! [word]
+(defn start-hangman! [word]
   (loop [game (new-game word)]
     (cond 
       (lose? game) (show-lose-message-swing!)
@@ -89,3 +90,36 @@
                   game' (with-attempt game c)]
               (show-message-dialog! (message game'))
               (recur game')))))
+
+
+(defn <!!?
+  ([ch]
+    (<!!? ch 200))
+  ([ch timeout-millis]
+    (alt!!
+      (timeout timeout-millis) :timeout
+      ch ([v] v))))
+
+(defn >!!?
+  ([ch v]
+    (>!!? ch v 200))
+  ([ch v timeout-millis]
+    (alt!!
+      (timeout timeout-millis) false
+      [[ch v]] true)))
+
+(defn start-hangman-server! [requests responses]
+  (thread
+    (<!!? requests)
+    (let [request (<!!? requests)]
+;      (println request)
+      (>!!? responses 
+            (if (= request :lose?)
+              false
+              head)))))
+
+
+
+
+
+
