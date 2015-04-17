@@ -112,11 +112,11 @@
   (thread
     (<!!? requests)
     (let [request (<!!? requests)]
-;      (println request)
       (>!!? responses 
-            (if (= request :lose?)
-              false
-              head)))))
+            (cond 
+              (= request :lose?) false
+              (= request :win?) false
+              :else head)))))
 
 
 

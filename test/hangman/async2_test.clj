@@ -14,6 +14,15 @@
         (>!!? requests "aligator")
         (>!!? requests :lose?)
         (<!!? responses) => false))
+
+(fact "new game is not won" 
+        "new game is not lost" 
+      (let [requests (chan)
+            responses (chan)]
+        (start-hangman-server! requests responses)
+        (>!!? requests "aligator")
+        (>!!? requests :win?)
+        (<!!? responses) => false))
  
 (fact "first error"
       (let [requests (chan)
@@ -22,6 +31,7 @@
         (>!!? requests "aligator")
         (>!!? requests "w")
         (<!!? responses) => head))
+
 
 ;(fact "correct letters win the game"
 ;      (let [requests (chan)
