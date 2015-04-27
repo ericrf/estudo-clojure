@@ -33,17 +33,19 @@
         (<!!? responses) => head))
 
 
-;(fact "correct letters win the game"
-;      (let [requests (chan)
-;            responses (chan)]
-;        (start-hangman-server! requests responses)
-;        (>!!? requests "aligator")
-;        (>!!? requests "a")
-;        (>!!? requests "l")
-;        (>!!? requests "i")
-;;        (reduce >!!? requests ["a" "l" "i" "g" "t" "o" "r"])
-;        (>!!? requests :win?)
-;        (println (<!!? responses))
-;        true => true))
+(fact "correct letters win the game"
+      (let [requests (chan)
+            responses (chan)]
+        (start-hangman-server! requests responses)
+        (>!!? requests "aligator")
+        (>!!? requests "a")
+        (println (<!!? responses))
+        (>!!? requests "l")
+        (println (<!!? responses))
+        (>!!? requests "i")
+        (println (<!!? responses))
+;        (reduce >!!? requests ["a" "l" "i" "g" "t" "o" "r"])
+        (>!!? requests :win?)
+        (<!!? responses) => true))
 
 ;(do (require 'midje.repl) (midje.repl/autotest))

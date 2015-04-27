@@ -111,12 +111,15 @@
 (defn start-hangman-server! [requests responses]
   (thread
     (<!!? requests)
-    (let [request (<!!? requests)]
-      (>!!? responses 
-            (cond 
-              (= request :lose?) false
-              (= request :win?) false
-              :else head)))))
+    (loop []
+      (let [request (<!!? requests)]
+        (>!!? responses 
+              (cond 
+                (= request :lose?) false
+                (= request :win?) true
+                :else head)))
+      (recur)
+      )))
 
 
 
