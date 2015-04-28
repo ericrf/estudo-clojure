@@ -18,6 +18,12 @@
     (doseq [request request-list] 
       (>!!? requests request))
     (fact "response must match" (<!!? responses) => response)))
+
+(defn- assert-response2 [response request-list]
+  (let [[requests responses] (prepare)]
+    (doseq [request request-list] 
+      (>!!? requests request))
+    (fact "response must match" (<!!? responses) => response)))
   
 (fact "new game is not lost" 
   (assert-response false :lose?))
@@ -33,5 +39,13 @@
 
 (fact "lose the game"
   (assert-response true "x" "z" "v" "b" :lose?))
+
+(tabular "soma" 
+   (assert-response2 ?a ?b)
+    ?a        ?b
+    false     [:lose?] 
+    false     [:win?]
+    
+   )
 
 ;(do (require 'midje.repl) (midje.repl/autotest))
