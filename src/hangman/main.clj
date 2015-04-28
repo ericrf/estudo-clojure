@@ -110,17 +110,15 @@
 
 (defn start-hangman-server! [requests responses]
   (thread
-    (let [game (<!!? requests)]
-      (loop []
-        (let [request (<!!? requests)]
-          (>!!? responses 
-                (cond 
-                  (= request :lose?) false
-                  (= request :win?) true
-                  :else (let [game' (with-attempt game request)]
-                          (message game')
-                          game'))))
-        (recur)))))
+    (loop [game (new-game (<!!? requests))]
+      (let [request (<!!? requests)
+            [game' response] (cond 
+              (= request :lose?) [game (lose? game)]
+              (= request :win?)  [game (win?  game)]
+              :else (let [game' (with-attempt game request)]
+                    [game' (message game')]))]
+        (>!!? responses response)
+        (recur game')))))
 
 
 
