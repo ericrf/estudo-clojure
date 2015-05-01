@@ -1,25 +1,8 @@
 (ns hangman.async2-test
   (:require [midje.sweet :refer :all]
             [hangman.main :refer :all]
+            [hangman.tools :refer :all]
             [clojure.core.async :refer [chan alt!! timeout thread sliding-buffer]]))
-
-
-(defn <!!?
-  ([ch]
-    (<!!? ch 200))
-  ([ch timeout-millis]
-    (alt!!
-      (timeout timeout-millis) :timeout
-      ch ([v] v))))
-
-(defn >!!?
-  ([ch v]
-    (>!!? ch v 200))
-  ([ch v timeout-millis]
-    (alt!!
-      (timeout timeout-millis) false
-      [[ch v]] true)))
-
 
 (defn- prepare []
   (let [requests (chan)
