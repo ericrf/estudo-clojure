@@ -3,49 +3,51 @@
             [hangman.main :refer :all]
             [clojure.core.async :refer [chan alt!! timeout thread sliding-buffer]]))
 
-(defn- with-attempts [game, guesses]
-    (reduce with-attempt game guesses))
+
+(defn <!!?
+  ([ch]
+    (<!!? ch 200))
+  ([ch timeout-millis]
+    (alt!!
+      (timeout timeout-millis) :timeout
+      ch ([v] v))))
+
+(defn >!!?
+  ([ch v]
+    (>!!? ch v 200))
+  ([ch v timeout-millis]
+    (alt!!
+      (timeout timeout-millis) false
+      [[ch v]] true)))
+
 
 (defn- prepare []
   (let [requests (chan)
-        responses (chan (sliding-buffer 1))]
+        responses (chan)]
     (start-hangman-server! requests responses)
     (>!!? requests "aligator")
     [requests responses]))
 
-(defn- assert-response [response & request-list]
+(defn- get-response [request-list]
   (let [[requests responses] (prepare)]
-    (doseq [request request-list] 
-      (>!!? requests request))
-    (fact "response must match" (<!!? responses) => response)))
+    (reduce (fn [_ request]
+              (>!!? requests request)
+              (<!!? responses))
+            nil
+            request-list)))
 
-(defn- assert-response2 [response request-list]
-  (let [[requests responses] (prepare)]
-    (doseq [request request-list] 
-      (>!!? requests request))
-    (fact "response must match" (<!!? responses) => response)))
-  
-(fact "new game is not lost" 
-  (assert-response false :lose?))
+; PAREDIT
 
-(fact "new game is not won"
-  (assert-response false :win?))
+(tabular "Hangman"
+  (fact "Responds correctly"
+    (get-response ?requests) => ?response)
+         ?response ?requests                            ?fact      ;FITNESSE - FIT (Ward Cunningham)
+         false     [:lose?]                             "New game is not lost"
+         false     [:win?]                              "New game is not won"
+         head      ["w"]                                "first mistake"
+         true      ["a" "l" "i" "g" "t" "o" "r" :win?]  "Win"
+         true      ["x" "z" "v" "b" :lose?]             "Lose")
 
-(fact "first error"
-  (assert-response head "w"))
 
-(fact "correct letters win the game"
-  (assert-response true "a" "l" "i" "g" "t" "o" "r" :win?))
-
-(fact "lose the game"
-  (assert-response true "x" "z" "v" "b" :lose?))
-
-(tabular "soma" 
-   (assert-response2 ?a ?b)
-    ?a        ?b
-    false     [:lose?] 
-    false     [:win?]
-    
-   )
 
 ;(do (require 'midje.repl) (midje.repl/autotest))

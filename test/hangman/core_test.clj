@@ -2,7 +2,7 @@
   (:require [midje.sweet :refer :all]
             [hangman.main :refer :all]))
 
-(let [game (new-game "aligator")]
+#_(let [game (new-game "aligator")]
   (defn- with-attempts [game, guesses]
     (reduce with-attempt game guesses))
 

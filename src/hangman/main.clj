@@ -1,5 +1,5 @@
 (ns hangman.main
-  (:require [clojure.core.async :refer [chan alt!! timeout thread]]))
+  (:require [clojure.core.async :refer [chan alt!! timeout thread go <! >!]]))
 
 (def head  
   "      _______
@@ -60,7 +60,11 @@
   (show-message-dialog! "Você PERDEU!"))
 
 (defn new-game [word] 
-  {:word word :chs (into #{} (seq word)) :hits #{} :mistakes 4 :message nil})
+  {:word     word
+   :chs      (into #{} (seq word))
+   :hits     #{}
+   :mistakes 4
+   :message  nil})
 
 (defn win? [game]
   (= (count (:hits game)) (count (:chs game))))
@@ -92,33 +96,17 @@
               (recur game')))))
 
 
-(defn <!!?
-  ([ch]
-    (<!!? ch 200))
-  ([ch timeout-millis]
-    (alt!!
-      (timeout timeout-millis) :timeout
-      ch ([v] v))))
-
-(defn >!!?
-  ([ch v]
-    (>!!? ch v 200))
-  ([ch v timeout-millis]
-    (alt!!
-      (timeout timeout-millis) false
-      [[ch v]] true)))
-
 (defn start-hangman-server! [requests responses]
-  (thread
-    (loop [game (new-game (<!!? requests))]
-      (let [request (<!!? requests)
-            [game' response] (cond 
-              (= request :lose?) [game (lose? game)]
-              (= request :win?)  [game (win?  game)]
-              :else (let [game' (with-attempt game request)]
-                    [game' (message game')]))]
-        (>!!? responses response)
-        (recur game')))))
+  (go
+    (loop [game (new-game (<! requests))]
+      (when-let [request (<! requests)]
+        (let [[game' response] (cond
+                                 (= request :lose?) [game (lose? game)]
+                                 (= request :win?) [game (win? game)]
+                                 :else (let [game' (with-attempt game request)]
+                                         [game' (message game')]))]
+          (>! responses response)
+          (recur game'))))))
 
 
 
