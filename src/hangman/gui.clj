@@ -1,5 +1,7 @@
 (ns hangman.gui
-  (:require [hangman.main :refer :all]))
+  (:require [hangman.main :refer :all]
+            [hangman.tools :refer :all]
+            [clojure.core.async :refer [chan]]))
 
 (defn- show-input-dialog! [sentence]
   (javax.swing.JOptionPane/showInputDialog sentence))
@@ -16,16 +18,22 @@
 (defn- show-lose-message-swing! []
   (show-message-dialog! "Você PERDEU!"))
 
-(defn start-hangman! [word]
-  (loop [game (new-game word)]
-    (cond
-      (lose? game) (show-lose-message-swing!)
-      (win? game) (show-win-message-swing!)
-      :else (let [c (ask-for-character-swing!)
-                  game' (with-attempt game c)]
-              (show-message-dialog! (message game'))
-              (recur game')))))
-
-(defn -main
-  []
-  (start-hangman! "altz"))
+(defn -main []
+  (let [requests (chan)
+        responses (chan)]
+    (start-hangman-server! requests responses)
+    (>!!? requests (show-input-dialog! "Informe a palavra secreta."))
+    (loop []
+      (let [lose (do
+                  (>!!? requests :lose?)
+                  (<!!? responses))
+            win (do
+                  (>!!? requests :win?)
+                  (<!!? responses))]
+        (cond
+         lose (show-lose-message-swing!)
+         win (show-win-message-swing!)
+         :else (let [c (ask-for-character-swing!)]
+                 (>!!? requests c)
+                 (show-message-dialog! (<!!? responses))
+                 (recur)))))))
